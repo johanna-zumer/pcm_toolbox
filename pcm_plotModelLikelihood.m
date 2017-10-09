@@ -76,12 +76,11 @@ normalize = 0;                 % normalize likelihoods to upper noise ceiling
 style     = 'bar';             % plotting style. 'bar' or 'dot'
 plotceil  = 1;                 % turn on/off plotting of noise ceilings
 ceilcolor = [0.8 0.8 0.8];     % noise ceiling patch color
-colors    = {[.7 0 0],...      % red
-             [0 0 .7],...      % blue
-             [.9 .6 0],...     % orange
-             [0 0.6 0.6],...   % cyan
-             [0.5 0 0.5],...   % purple
-             [0.2 0.6 0.2]};   % green
+tmp=parula(numel(M));
+for mm=1:numel(M),
+  colors{mm}=tmp(mm,:);
+end
+clear tmp                  % color of bars on graph, spread out over number of models (see 'help parula' for other options)
 pcm_vararginoptions(varargin,{'Nnull','Nceil','upperceil','colors',...
     'varfcn','mindx','subj','normalize','style','ceilcolor','plotceil'});
 

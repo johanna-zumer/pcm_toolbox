@@ -137,7 +137,7 @@ for s=1:numSubj
     end;
     
     % Compute the (restricted) likelihood for this Subject
-    ldet  = -2* sum(log(diag(chol(iV))));        % Safe computation of the log determinant (V) Thanks to code from D. lu
+    ldet  = -2* sum(log(diag(chol(pcm_makePD(iV)))));        % Safe computation of the log determinant (V) Thanks to code from D. lu
     LogLike(s)     = -P(s)/2*(ldet)-0.5*traceABtrans(iVr,YY{s});
     if (~isempty(X) && ~isempty(X{s})) % Correct for ReML estimates
         LogLike(s) = LogLike(s) - P(s)*sum(log(diag(chol(X{s}'*iV*X{s}))));  % - P/2 log(det(X'V^-1*X));

@@ -261,11 +261,19 @@ for s = 1:numSubj
                 end;
                 
                 switch (M{m}.fitAlgorithm)
-                    case 'minimize' 
-                        [theta,nlv,T.iterations(s,m)] = minimize(x0, fcn, MaxIteration);
-                        T.fitLike(s,m)=-nlv(end); 
-                     case 'NR' 
-                        [theta,T.fitLike(s,m),T.iterations(s,m),T.reg(s,m)] = pcm_NR(x0, fcn);
+                  case 'minimize'
+                    [theta,nlv,T.iterations(s,m)] = minimize(x0, fcn, MaxIteration);
+                    T.fitLike(s,m)=-nlv(end);
+                    T.notSmethod='minimize';
+                  case 'NR'
+                    try
+                      [theta,T.fitLike(s,m),T.iterations(s,m),T.reg(s,m)] = pcm_NR(x0, fcn);
+                      T.notSmethod='NR';
+                    catch
+                      [theta,nlv,T.iterations(s,m)] = minimize(x0, fcn, MaxIteration);
+                      T.fitLike(s,m)=-nlv(end);
+                      T.notSmethod='minimize';
+                    end
                 end; 
 
                 theta_hat{m}(:,s)=theta(1:M{m}.numGparams);
@@ -293,7 +301,21 @@ for s = 1:numSubj
                 'runEffect',{B{s}},'S',S(s),'fitScale',fitScale);   % Minize scaling params only
         end;
         
-        [theta,T.likelihood(s,m)] =  pcm_NR(x0, fcn);
+        switch (M{m}.fitAlgorithm)
+          case 'minimize'
+            [theta,nlv] = minimize(x0, fcn, MaxIteration);
+            T.likelihood(s,m)=-nlv(end);
+            T.Smethod='minimize';
+          case 'NR'
+            try
+              [theta,T.likelihood(s,m)] = pcm_NR(x0, fcn);
+              T.Smethod='NR';
+            catch
+              [theta,nlv] = minimize(x0, fcn, MaxIteration);
+              T.likelihood(s,m)=-nlv(end);
+              T.Smethod='minimize';
+            end
+        end
         T.time(s,m)       = toc;
         if verbose
             fprintf('\t Iterations %d, Elapsed time: %3.3f\n',T.iterations(s,m),T.time(s,m));

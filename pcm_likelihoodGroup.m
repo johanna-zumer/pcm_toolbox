@@ -137,10 +137,18 @@ for s=1:numSubj
     end;
     
     % Compute the (restricted) likelihood for this Subject
-    ldet  = -2* sum(log(diag(chol(pcm_makePD(iV)))));        % Safe computation of the log determinant (V) Thanks to code from D. lu
+    try
+      ldet  = -2* sum(log(diag(chol(pcm_makePD(iV)))));        % Safe computation of the log determinant (V) Thanks to code from D. lu
+    catch
+      ldet  = -2* sum(log(diag(chol(nearestSPD(iV)))));        % Safe computation of the log determinant (V) Thanks to code from D. lu
+    end
     LogLike(s)     = -P(s)/2*(ldet)-0.5*traceABtrans(iVr,YY{s});
     if (~isempty(X) && ~isempty(X{s})) % Correct for ReML estimates
-        LogLike(s) = LogLike(s) - P(s)*sum(log(diag(chol(X{s}'*iV*X{s}))));  % - P/2 log(det(X'V^-1*X));
+      try
+        LogLike(s) = LogLike(s) - P(s)*sum(log(diag(chol(pcm_makePD(X{s}'*iV*X{s})))));  % - P/2 log(det(X'V^-1*X));
+      catch
+        LogLike(s) = LogLike(s) - P(s)*sum(log(diag(chol(nearestSPD(X{s}'*iV*X{s})))));  % - P/2 log(det(X'V^-1*X));
+      end
     end;
     
     % Calculate the first derivative
